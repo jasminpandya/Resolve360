@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
+import json
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-import requests
 import uuid
 import os
 
@@ -30,6 +30,28 @@ users = {
 }
 
 chat_history = []
+
+@app.route('/analytics')
+def analytics():
+    status_counts = {
+        'Pending': 12,
+        'In Progress': 8,
+        'Completed': 20
+    }
+
+    trend_data = {
+        "2025-08-01": 3,
+        "2025-08-02": 4,
+        "2025-08-03": 6,
+        "2025-08-04": 2,
+        "2025-08-05": 5
+    }
+
+    return render_template(
+        'analytics.html',
+        status_json=json.dumps(status_counts),
+        trend_json=json.dumps(trend_data)
+    )
 
 @app.route('/chat', methods=['POST'])
 def chat():

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Analytics - Resolve360</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dark-theme">
+     <div class="top-logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Resolve360 Logo" class="logo-img">
+    </div>
+<div class="container mt-5">
+  <h2 class="text-center mb-4" style="color: black;">Complaint Analytics</h2>
+
+  <div class="row">
+    <!-- Status Chart -->
+    <div class="col-md-6">
+      <div class="card bg-dark text-white p-4 mb-4">
+        <h5 class="text-center mb-3">Complaint Status</h5>
+        <canvas id="statusChart" height="300"></canvas>
+      </div>
+    </div>
+
+    <!-- Trend Chart -->
+    <div class="col-md-6">
+      <div class="card bg-dark text-white p-4 mb-4">
+        <h5 class="text-center mb-3">Complaint Trend Over Time</h5>
+        <canvas id="trendChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <a href="/dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+  </div>
+</div>
+
+
+  
+  <script>
+    const statusCounts = JSON.parse('{{ status_json | safe }}');
+    const trendData = JSON.parse('{{ trend_json | safe }}');
+
+    // Status Bar Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Pending', 'In Progress', 'Completed'],
+        datasets: [{
+          label: 'Number of Complaints',
+          data: [
+            statusCounts["Pending"] || 0,
+            statusCounts["In Progress"] || 0,
+            statusCounts["Completed"] || 0
+          ],
+          backgroundColor: ['orange', 'blue', 'green']
+        }]
+      },
+      options: {
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // Trend Line Chart
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: Object.keys(trendData),
+        datasets: [{
+          label: 'Complaints Over Time',
+          data: Object.values(trendData),
+          borderColor: 'cyan',
+          fill: false,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true },
+          x: { ticks: { color: 'white' } }
+        },
+        plugins: {
+          legend: { labels: { color: 'white' } }
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
