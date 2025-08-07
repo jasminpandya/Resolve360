@@ -12,10 +12,16 @@ export AWS_SESSION_TOKEN="<AWS_SESSION_TOKEN>"
 sh deploy_prereqs.sh
 ```
 
-## Run to start the agent
+## Run to start the backend in separate git bash
 ```
 cd ./agent
-python agent.py
+python end_user_api_flask.py
+```
+
+## Run to start the UI in separate git bash
+```
+cd ./agent
+python app.py
 ```
 
 ## Do clean up once program is executed
