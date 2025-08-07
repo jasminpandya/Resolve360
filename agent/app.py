@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
 import os
+import requests
 
 app = Flask(__name__, template_folder='../webapp', static_folder='../static')
 
@@ -217,6 +218,41 @@ def get_complaints():
         {"id": 5, "title": "Order placement", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
         {"id": 6, "title": "Payment stuck", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"}
     ])
+
+@app.route('/callAgentForAnalysis', methods=['POST'])
+def callAgentForAnalysis():
+    message= request.get_json().get('message', '')
+    try:
+        response = requests.post(
+            "http://127.0.0.1:8001/analyzeComplaint",
+            json={"message": message},
+            headers={"Content-Type": "application/json"}
+        )
+        data = response.json()
+
+        bot_reply = data.get("response", "")
+        # print("Bot reply:", bot_reply)
+        return jsonify({"message": bot_reply})
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"message": "⚠️ Failed to get response from chatbot."}), 500
+
+@app.route('/analytics-data')
+def analytics_data():
+    status_counts = {
+        'Pending': 12,
+        'In Progress': 8,
+        'Completed': 20
+    }
+    trend_data = {
+        "2025-08-01": 3,
+        "2025-08-02": 4,
+        "2025-08-03": 6,
+        "2025-08-04": 2,
+        "2025-08-05": 5
+    }
+    return jsonify({"status_counts": status_counts, "trend_data": trend_data})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
