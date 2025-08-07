@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -34,8 +35,8 @@ chat_history = []
 def chat():
     data = request.get_json()
     user_message = data.get('message')
-
     if not user_message:
+
         return jsonify({'reply': 'No message received'}), 400
 
     # TODO: Call your AI model or LLM backend here
@@ -135,12 +136,12 @@ def submit():
 def track():
     if request.method == 'POST':
         complaint_id = request.form['complaint_id']
-        complaint = complaints.get(complaint_id)
+        complaint = get_complaints.get(complaint_id)
         return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
     return render_template('track.html')
 
 @app.route('/complaints')
-def complaints():
+def get_complaints():
     return jsonify([
         {"id": 1, "title": "Network issue", "status": "New", "description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
         {"id": 2, "title": "Login problem", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},

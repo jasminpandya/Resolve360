@@ -37,26 +37,25 @@
       chatWindow.appendChild(userMsgDiv);
       chatWindow.scrollTop = chatWindow.scrollHeight;
       input.value = '';
-
-      try {
-        const response = await fetch('/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: msg })
-        });
-
-        const data = await response.json();
-        const botMsgDiv = document.createElement('div');
-        botMsgDiv.className = 'message bot-message';
-        botMsgDiv.textContent = data.reply || '...';
-        chatWindow.appendChild(botMsgDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-      } catch (err) {
-        const errMsg = document.createElement('div');
-        errMsg.className = 'message bot-message';
-        errMsg.textContent = '⚠️ Error reaching AI assistant.';
-        chatWindow.appendChild(errMsg);
-      }
+      fetch('/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: msg })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const botMsgDiv = document.createElement('div');
+    botMsgDiv.className = 'message bot-message';
+    botMsgDiv.innerHTML = data.reply;  // ✅ Render HTML (e.g., links)
+    chatWindow.appendChild(botMsgDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  })
+  .catch(err => {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'message bot-message';
+    errorDiv.innerHTML = "⚠️ AI bot is not available at the moment. <a href='/manual-complaint'>Click here to register a manual complaint.</a>.";
+    chatWindow.appendChild(errorDiv);
+  });
     }
   </script>
 </body>
