@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import uuid
@@ -72,10 +72,13 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        profile = request.form['profile']
         user_hash = users.get(email)
 
         if user_hash and check_password_hash(user_hash, password):
             session['user'] = email
+            if profile == 'Support':
+                return render_template('support.html',email=email)
             return redirect(url_for('dashboard'))
         else:
             return render_template('login.html', error="Invalid email or password.")
@@ -122,6 +125,16 @@ def track():
         return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
     return render_template('track.html')
 
+@app.route('/complaints')
+def complaints():
+    return jsonify([
+        {"id": 1, "title": "Network issue", "status": "New", "description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 2, "title": "Login problem", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 3, "title": "Payment failure", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 4, "title": "Billing", "status": "New","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 5, "title": "Order placement", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 6, "title": "Payment stuck", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"}
+    ])
 
 if __name__ == '__main__':
     app.run(debug=True)
