@@ -129,7 +129,7 @@
         <div class="profile-dropdown" id="profileDropdown">
             <p><strong>Name:</strong> krutarth</p>
             <p><strong>Email:</strong> {{ email }}</p>
-            <p><a href="/logout">Logout</a></p>
+            <p><a href="/logout-support">Logout</a></p>
         </div>
     </div>
 </div>
@@ -166,7 +166,7 @@
 
 <script>
         // Fetch complaints from API
-        fetch("https://bug-free-telegram-w5rw7pjjp7w2gvp5-5000.app.github.dev/complaints")
+        fetch("/complaints")
     .then(response => response.json())
     .then(data => {
                 // Organize complaints by status

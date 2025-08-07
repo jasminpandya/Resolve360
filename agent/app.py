@@ -86,14 +86,12 @@ def loginsupport():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        profile = request.form['profile']
+        profile = "support"
         user_hash = users.get(email)
 
         if user_hash and check_password_hash(user_hash, password):
-            session['user'] = email
-            if profile == 'Support':
-                return render_template('support.html',email=email)
-            return redirect(url_for('dashboard'))
+            session['user'] = email                
+            return redirect(url_for('kanban_board',email=email))
         else:
             return render_template('login-support.html', error="Invalid email or password.")
     return render_template('login-support.html')
@@ -102,6 +100,42 @@ def loginsupport():
 def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
+
+@app.route('/logout-support',methods=['GET','POST'])
+def logoutsupport():
+    session.pop('user', None)
+    return redirect(url_for('loginsupport'))
+
+@app.route('/kanban')
+def kanban_board():
+    email = request.args.get('email')
+    complaints_list = [
+        {"id": 1, "title": "Network issue", "status": "New", "description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 2, "title": "Login problem", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 3, "title": "Payment failure", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 4, "title": "Billing", "status": "New","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 5, "title": "Order placement", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
+        {"id": 6, "title": "Payment stuck", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"}
+    ]
+
+
+    # Categorize complaints
+    complaints = {
+        'new': [],
+        'in_progress': [],
+        'completed': []
+    }
+
+    for complaint in complaints_list:
+        status = complaint['status'].lower()
+        if status == 'new':
+            complaints['new'].append(complaint)
+        elif status == 'inprogress':
+            complaints['in_progress'].append(complaint)
+        elif status == 'completed':
+            complaints['completed'].append(complaint)
+
+    return render_template('kanbansupport.html', complaints=complaints,email=email)
 
 @app.route('/submit', methods=['POST'])
 def submit():
