@@ -15,7 +15,25 @@ def chat():
 
         # Get response from the agent
         response = complaints_agent(message)
-        return jsonify({"response": str(response)})
+        # print type of response
+        # iterate through response.message['content'] and for each item print the text between <answer> and </answer> append the output to a list and create a string from that list
+        response_content = response.message['content']
+        answer_texts = []
+        for item in response_content:
+            if isinstance(item, dict) and 'text' in item:
+                text = item['text']
+                start_tag = "<answer>"
+                end_tag = "</answer>"
+                start_index = text.find(start_tag)
+                end_index = text.find(end_tag)
+                if start_index != -1 and end_index != -1:
+                    answer_texts.append(text[start_index + len(start_tag):end_index].strip())
+        response_string = " ".join(answer_texts)
+        if not response_string:
+            return jsonify({"response": "No valid answer found in the response."}), 400
+        
+
+        return jsonify({"response": response_string})
 
     except Exception as e:
         #return jsonify({"response": f"An error occurred: {str(e)}"}), 500
