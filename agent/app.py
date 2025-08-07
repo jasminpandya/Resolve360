@@ -4,7 +4,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
 import os
 
-app = Flask(__name__, template_folder='../webapp')
+app = Flask(__name__, template_folder='../webapp', static_folder='../static')
+
 app.secret_key = 'mehta'
 
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -21,11 +22,38 @@ def home():
 def dashboard():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('dashboard.html')
+    return render_template('chatbot.html')
 
 users = {
-    "krutarthmehta3@gmail.com": generate_password_hash("admin123")
+    "admin@gmail.com": generate_password_hash("admin123")
 }
+
+chat_history = []
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    user_message = data.get('message')
+
+    if not user_message:
+        return jsonify({'reply': 'No message received'}), 400
+
+    # TODO: Call your AI model or LLM backend here
+    ai_reply = generate_ai_response(user_message)
+
+    # Log message + response
+    chat_history.append({
+        'timestamp': datetime.utcnow().isoformat(),
+        'user': user_message,
+        'bot': ai_reply
+    })
+
+    return jsonify({'reply': ai_reply})
+
+# Dummy AI responder function (replace with actual logic)
+def generate_ai_response(message):
+    # Here, you can call AWS Bedrock, OpenAI API, or your own model
+    return f"You said: {message}"
 
 @app.route('/manual-complaint')
 def manual_complaint():

@@ -6,6 +6,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+  <header class="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white shadow-sm flex-wrap">
+  <div class="d-flex align-items-center">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Resolve360 Logo" class="logo-img me-3">
+  </div>
+</header>
   <div class="container">
     <h3 class="mb-4">Track Your Complaint</h3>
     <form method="POST">
