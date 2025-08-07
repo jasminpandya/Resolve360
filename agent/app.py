@@ -72,6 +72,20 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        user_hash = users.get(email)
+
+        if user_hash and check_password_hash(user_hash, password):
+            session['user'] = email
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('login.html', error="Invalid email or password.")
+    return render_template('login.html')
+
+@app.route('/login-support', methods=['GET', 'POST'])
+def loginsupport():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
         profile = request.form['profile']
         user_hash = users.get(email)
 
@@ -81,8 +95,8 @@ def login():
                 return render_template('support.html',email=email)
             return redirect(url_for('dashboard'))
         else:
-            return render_template('login.html', error="Invalid email or password.")
-    return render_template('login.html')
+            return render_template('login-support.html', error="Invalid email or password.")
+    return render_template('login-support.html')
 
 @app.route('/logout')
 def logout():
