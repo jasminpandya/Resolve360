@@ -1,7 +1,7 @@
-import datetime
+from datetime import datetime, timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-
+import requests
 import uuid
 import os
 
@@ -54,7 +54,18 @@ def chat():
 # Dummy AI responder function (replace with actual logic)
 def generate_ai_response(message):
     # Here, you can call AWS Bedrock, OpenAI API, or your own model
-    return f"You said: {message}"
+    try:
+        response = requests.post(
+            "http://127.0.0.1:8000/endUserChat",
+            json={"message": message},
+            headers={"Content-Type": "application/json"}
+        )
+        data = response.json()
+        bot_reply = data.get("response", "")
+        return bot_reply
+    except Exception as e:
+        print("Error:", e)
+        return "⚠️ Failed to get response from chatbot."
 
 @app.route('/manual-complaint')
 def manual_complaint():
