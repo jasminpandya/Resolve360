@@ -237,5 +237,22 @@ def callAgentForAnalysis():
         print("Error:", e)
         return jsonify({"message": "⚠️ Failed to get response from chatbot."}), 500
 
+@app.route('/analytics-data')
+def analytics_data():
+    status_counts = {
+        'Pending': 12,
+        'In Progress': 8,
+        'Completed': 20
+    }
+    trend_data = {
+        "2025-08-01": 3,
+        "2025-08-02": 4,
+        "2025-08-03": 6,
+        "2025-08-04": 2,
+        "2025-08-05": 5
+    }
+    return jsonify({"status_counts": status_counts, "trend_data": trend_data})
+
+
 if __name__ == '__main__':
     app.run(debug=True)
