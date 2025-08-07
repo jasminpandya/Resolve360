@@ -12,3 +12,4 @@ ragas
 langchain-aws
 pandas
 datasets
+flask
