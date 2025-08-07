@@ -1,5 +1,4 @@
 cd ./agent
-pip install -r requirements.txt
 
 sh deploy_prereqs.sh
 
