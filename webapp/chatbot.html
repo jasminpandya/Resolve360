@@ -5,16 +5,28 @@
   <title>AI Chat - Resolve360</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .loader {
+      font-style: italic;
+      color: gray;
+    }
+
+    .loader-message {
+      font-style: italic;
+      color: #666;
+      padding-left: 10px;
+    }
+  </style>
 </head>
 <body class="dark-theme">
   <div class="top-logo">
-  <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Resolve360 Logo" class="logo-img">
-</div>
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Resolve360 Logo" class="logo-img">
+  </div>
 
   <div class="chat-wrapper">
     <div class="chat-history" id="chatWindow">
-      <!-- Messages will go here -->
       <div class="message bot-message">👋 Hello! How can I help you today?</div>
+      <div id="chatMessages"></div>
     </div>
 
     <div class="chat-input-area">
@@ -27,35 +39,71 @@
     async function sendMessage() {
       const input = document.getElementById('userInput');
       const msg = input.value.trim();
-      if (!msg) return;
-
+      const chatMessages = document.getElementById('chatMessages');
       const chatWindow = document.getElementById('chatWindow');
 
+      if (!msg) return;
+
+      input.disabled = true;
+
+      // Append user message
       const userMsgDiv = document.createElement('div');
       userMsgDiv.className = 'message user-message';
       userMsgDiv.textContent = msg;
-      chatWindow.appendChild(userMsgDiv);
+      chatMessages.appendChild(userMsgDiv);
+
+      // Append loader with animated dots
+      const loaderDiv = document.createElement('div');
+      loaderDiv.id = 'loader';
+      loaderDiv.className = 'message loader-message';
+      loaderDiv.innerHTML = 'Typing<span id="dots">.</span>';
+      chatMessages.appendChild(loaderDiv);
+
+      // Start animated dots (1–3 dots cycling)
+      let dotCount = 1;
+      const maxDots = 3;
+      const dotInterval = setInterval(() => {
+        dotCount = (dotCount % maxDots) + 1;
+        const dots = '.'.repeat(dotCount);
+        const dotsSpan = document.getElementById('dots');
+        if (dotsSpan) dotsSpan.textContent = dots;
+      }, 500);
+
+      // Scroll to bottom
       chatWindow.scrollTop = chatWindow.scrollHeight;
       input.value = '';
-      fetch('/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: msg })
-  })
-  .then(res => res.json())
-  .then(data => {
-    const botMsgDiv = document.createElement('div');
-    botMsgDiv.className = 'message bot-message';
-    botMsgDiv.innerHTML = data.reply;  // ✅ Render HTML (e.g., links)
-    chatWindow.appendChild(botMsgDiv);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
-  })
-  .catch(err => {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'message bot-message';
-    errorDiv.innerHTML = "⚠️ AI bot is not available at the moment. <a href='/manual-complaint'>Click here to register a manual complaint.</a>.";
-    chatWindow.appendChild(errorDiv);
-  });
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+
+        const data = await response.json();
+
+        clearInterval(dotInterval);
+        if (loaderDiv && loaderDiv.parentNode) loaderDiv.remove();
+
+        const botMsgDiv = document.createElement('div');
+        botMsgDiv.className = 'message bot-message';
+        botMsgDiv.innerHTML = data.reply || "🤖 Sorry, I didn't understand that.";
+        chatMessages.appendChild(botMsgDiv);
+
+      } catch (err) {
+        clearInterval(dotInterval);
+        if (loaderDiv && loaderDiv.parentNode) loaderDiv.remove();
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'message bot-message';
+        errorDiv.innerHTML = "⚠️ AI bot is not available. <a href='/manual-complaint'>Submit manually</a>.";
+        chatMessages.appendChild(errorDiv);
+      }
+
+      // Scroll and re-enable input
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+      input.disabled = false;
+      input.focus();
     }
   </script>
 </body>
