@@ -5,6 +5,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import uuid
 import os
 import requests
+import boto3
+import yaml 
 
 app = Flask(__name__, template_folder='../webapp', static_folder='../static')
 
@@ -253,6 +255,54 @@ def analytics_data():
     }
     return jsonify({"status_counts": status_counts, "trend_data": trend_data})
 
+def read_yaml_file(file_path):
+    with open(file_path, 'r') as file:
+        return yaml.safe_load(file)
+
+
+@app.route('/api/complaint', methods=['POST'])
+def create_complaint_api():
+    data = request.form
+    client_id = data.get('client_id', '1')  # Default client_id if not provided
+    name = data.get('name')
+    email = data.get('email')
+    phone = data.get('phone')
+    category = data.get('category')
+    description = data.get('description')
+
+    file = request.files.get('attachment')
+    print("inside complaint api")
+    try:
+       
+        config_path = os.path.join(os.path.dirname(__file__), 'prereqs/prereqs_config.yaml')
+        config = read_yaml_file(config_path)
+        kb_name = config['knowledge_base_name']
+
+     
+        dynamodb = boto3.resource('dynamodb')
+        smm_client = boto3.client('ssm')
+        table_name = smm_client.get_parameter(Name=f'{kb_name}-table-name', WithDecryption=False)
+        table = dynamodb.Table(table_name["Parameter"]["Value"])
+
+        complaint_id = str(uuid.uuid4())[:8]
+        table.put_item(
+            Item={
+                'client_id': '1',
+                'complaint_id': complaint_id,
+                'name': name,
+                'email': email,
+                'phone': phone,
+                'category': category,
+                'description': description,
+                'status': 'open'
+            }
+        )
+        print("complaint added")
+        return jsonify({"status": "success", "complaint_id": complaint_id}), 200
+
+    except Exception as e:
+        print("complaint logging failed")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
