@@ -200,13 +200,13 @@ def submit():
 
     return render_template('success.html', complaint_id=complaint_id)
 
-@app.route('/track', methods=['GET', 'POST'])
-def track():
-    if request.method == 'POST':
-        complaint_id = request.form['complaint_id']
-        # complaint = get_complaints.get(complaint_id)
-        return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
-    return render_template('track.html')
+# @app.route('/track', methods=['GET', 'POST'])
+# def track():
+#     if request.method == 'POST':
+#         complaint_id = request.form['complaint_id']
+#         # complaint = get_complaints.get(complaint_id)
+#         return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
+#     return render_template('track.html')
 
 @app.route('/callAgentForAnalysis', methods=['POST'])
 def callAgentForAnalysis():
