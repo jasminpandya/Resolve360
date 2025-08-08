@@ -34,6 +34,10 @@
       <button class="btn btn-primary send-btn" onclick="sendMessage()">Send</button>
     </div>
   </div>
+  <button class="btn btn-primary send-btn" 
+    onclick='window.location.href="/user_complaint_tracking?email={{ email | urlencode }}"'>
+    Track Complaints
+</button>
 
   <script>
     async function sendMessage() {
