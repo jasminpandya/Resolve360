@@ -1,6 +1,8 @@
+npm install
 cd ./agent
+pip install -r requirements.txt
 
-sh deploy_prereqs.sh
+# sh deploy_prereqs.sh
 
 # start the backend background and copy the logs to a file and also redirect them to console and log the process id in a file
 echo "Starting backend..."
