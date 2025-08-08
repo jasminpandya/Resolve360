@@ -29,32 +29,24 @@ def dashboard():
     return render_template('chatbot.html')
 
 users = {
-    "admin@gmail.com": generate_password_hash("admin123")
+    "admin@gmail.com": generate_password_hash("admin123"),
+    "customer@gmail.com": generate_password_hash("customer123")
+}
+
+support_users={
+    "admin@gmail.com": generate_password_hash("admin123"),
+    "support@gmail.com": generate_password_hash("support123")
 }
 
 chat_history = []
 
-@app.route('/analytics')
-def analytics():
-    status_counts = {
-        'Pending': 12,
-        'In Progress': 8,
-        'Completed': 20
+status_counts = {
+        'New': 0,
+        'In Progress': 0,
+        'Completed': 0
     }
+trend_data = {}
 
-    trend_data = {
-        "2025-08-01": 3,
-        "2025-08-02": 4,
-        "2025-08-03": 6,
-        "2025-08-04": 2,
-        "2025-08-05": 5
-    }
-
-    return render_template(
-        'analytics.html',
-        status_json=json.dumps(status_counts),
-        trend_json=json.dumps(trend_data)
-    )
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -124,7 +116,7 @@ def loginsupport():
         email = request.form['email']
         password = request.form['password']
         profile = "support"
-        user_hash = users.get(email)
+        user_hash = support_users.get(email)
 
         if user_hash and check_password_hash(user_hash, password):
             session['user'] = email                
@@ -146,17 +138,13 @@ def logoutsupport():
 @app.route('/kanban')
 def kanban_board():
     email = request.args.get('email')
-    complaints_list = [
-        {"id": 1, "title": "Network issue", "status": "New", "description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 2, "title": "Login problem", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 3, "title": "Payment failure", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 4, "title": "Billing", "status": "New","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 5, "title": "Order placement", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 6, "title": "Payment stuck", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"}
-    ]
+    
+    complaints_list = get_complaints_assigned_to_email(email)
+    print("response: "+str(complaints_list))
 
 
     # Categorize complaints
+
     complaints = {
         'new': [],
         'in_progress': [],
@@ -165,12 +153,20 @@ def kanban_board():
 
     for complaint in complaints_list:
         status = complaint['status'].lower()
-        if status == 'new':
+        # check if created_date not in complaint
+        
+            
+        if 'created_date' in complaint:
+            trend_data[complaint['created_date']] = trend_data.get(complaint['created_date'], 0) + 1
+        if status == 'open':
             complaints['new'].append(complaint)
-        elif status == 'inprogress':
+            status_counts['New'] += 1
+        elif status == 'in_progress':
             complaints['in_progress'].append(complaint)
+            status_counts['In Progress'] += 1
         elif status == 'completed':
             complaints['completed'].append(complaint)
+            status_counts['Completed'] += 1
 
     return render_template('kanbansupport.html', complaints=complaints,email=email)
 
@@ -210,17 +206,6 @@ def track():
         return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
     return render_template('track.html')
 
-@app.route('/complaints')
-def get_complaints():
-    return jsonify([
-        {"id": 1, "title": "Network issue", "status": "New", "description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 2, "title": "Login problem", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 3, "title": "Payment failure", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 4, "title": "Billing", "status": "New","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 5, "title": "Order placement", "status": "InProgress","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"},
-        {"id": 6, "title": "Payment stuck", "status": "completed","description": "Unable to connect to the internet.", "created_at": "2023-10-01","raised_by": "John Doe", "assigned_to_group": "Support Team"}
-    ])
-
 @app.route('/callAgentForAnalysis', methods=['POST'])
 def callAgentForAnalysis():
     message= request.get_json().get('message', '')
@@ -241,18 +226,18 @@ def callAgentForAnalysis():
 
 @app.route('/analytics-data')
 def analytics_data():
-    status_counts = {
-        'Pending': 12,
-        'In Progress': 8,
-        'Completed': 20
-    }
-    trend_data = {
-        "2025-08-01": 3,
-        "2025-08-02": 4,
-        "2025-08-03": 6,
-        "2025-08-04": 2,
-        "2025-08-05": 5
-    }
+    # status_counts = {
+    #     'Pending': 12,
+    #     'In Progress': 8,
+    #     'Completed': 20
+    # }
+    # trend_data = {
+    #     "2025-08-01": 3,
+    #     "2025-08-02": 4,
+    #     "2025-08-03": 6,
+    #     "2025-08-04": 2,
+    #     "2025-08-05": 5
+    # }
     return jsonify({"status_counts": status_counts, "trend_data": trend_data})
 
 def read_yaml_file(file_path):
@@ -283,7 +268,8 @@ def create_complaint_api():
         smm_client = boto3.client('ssm')
         table_name = smm_client.get_parameter(Name=f'{kb_name}-table-name', WithDecryption=False)
         table = dynamodb.Table(table_name["Parameter"]["Value"])
-
+        # get today's date
+        today = datetime.datetime.now().date()
         complaint_id = str(uuid.uuid4())[:8]
         table.put_item(
             Item={
@@ -294,7 +280,9 @@ def create_complaint_api():
                 'phone': phone,
                 'category': category,
                 'description': description,
-                'status': 'open'
+                'status': 'open',
+                'assignee_email': 'support@gmail.com',
+                'created_date': today
             }
         )
         print("complaint added")
@@ -303,6 +291,63 @@ def create_complaint_api():
     except Exception as e:
         print("complaint logging failed")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/complaints_fetch', methods=['GET'])
+def get_complaints_by_email():
+    email = request.args.get('email')
+    if not email:
+        return jsonify({"status": "error", "message": "Email is required"}), 400
+
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), 'prereqs/prereqs_config.yaml')
+        config = read_yaml_file(config_path)
+        kb_name = config['knowledge_base_name']
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        smm_client = boto3.client('ssm')
+        table_name = smm_client.get_parameter(Name=f'{kb_name}-table-name', WithDecryption=False)['Parameter']['Value']
+        table = dynamodb.Table(table_name)
+
+        # Query using GSI on 'email'
+        response = table.query(
+            IndexName='email-index',  # replace with the actual index name
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('email').eq(email)
+        )
+
+        complaints = response.get('Items', [])
+        
+        return jsonify({"status": "success", "complaints": complaints}), 200
+
+    except Exception as e:
+        print(f"Error fetching complaints: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+def get_complaints_assigned_to_email(email):
+    # email = request.args.get('email')
+    if not email:
+        return jsonify({"status": "error", "message": "Email is required"}), 400
+
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), 'prereqs/prereqs_config.yaml')
+        config = read_yaml_file(config_path)
+        kb_name = config['knowledge_base_name']
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        smm_client = boto3.client('ssm')
+        table_name = smm_client.get_parameter(Name=f'{kb_name}-table-name', WithDecryption=False)['Parameter']['Value']
+        table = dynamodb.Table(table_name)
+
+        # Query using GSI on 'email'
+        response = table.query(
+            IndexName='assignee_email-index',  # replace with the actual index name
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('assignee_email').eq(email)
+        )
+
+        complaints = response.get('Items', [])
+        print(f"Fetched complaints for email {email}: {complaints}")
+        return complaints
+
+    except Exception as e:
+        print(f"Error fetching complaints: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True)

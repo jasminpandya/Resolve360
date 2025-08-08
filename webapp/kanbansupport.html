@@ -127,7 +127,7 @@
               <ul class="dropdown-menu dropdown-menu-end">
                   <li class="dropdown-header">Profile</li>
                   <li><span class="dropdown-item-text">Email: {{ email }}</span></li>
-                  <li><span class="dropdown-item-text">Role: {{ support }}</span></li>
+                  <li><span class="dropdown-item-text">Role:  support_user </span></li>
                   <li><hr class="dropdown-divider"></li>
                   <li><a class="dropdown-item text-danger" href="{{ url_for('logoutsupport') }}">Logout</a></li>
               </ul>
@@ -143,9 +143,9 @@
           <h5 class="text-primary">🆕 New</h5>
           {% for item in complaints.new %}
             <div class="kanban-card border-new" data-complaint='{{ item | tojson | safe }}' onclick="showDetails(JSON.parse(this.getAttribute('data-complaint')))">
-              <b>ID</b>: {{ item.id }} <br/>
-              <b>Title</b>: {{ item.title }} <br/>
-              <b>Raised on Date</b>: {{ item.created_at }}
+              <b>ID</b>: {{ item.complaint_id }} <br/>
+              <b>Category</b>: {{ item.category }} <br/>
+              <b>Raised on Date</b>: {{ item.created_date }}
             </div>
           {% endfor %}
         </div>
@@ -155,9 +155,9 @@
           <h5 class="text-warning">⚙️ In Progress</h5>
           {% for item in complaints.in_progress %}
             <div class="kanban-card border-progress" data-complaint='{{ item | tojson | safe }}' onclick="showDetails(JSON.parse(this.getAttribute('data-complaint')))">
-              <b>ID</b>: {{ item.id }} <br/>
-              <b>Title</b>: {{ item.title }} <br/>
-              <b>Raised on Date</b>: {{ item.created_at }}
+              <b>ID</b>: {{ item.complaint_id }} <br/>
+              <b>Category</b>: {{ item.category }} <br/>
+              <b>Raised on Date</b>: {{ item.created_date }}
             </div>
           {% endfor %}
         </div>
@@ -167,9 +167,9 @@
           <h5 class="text-success">✅ Completed</h5>
           {% for item in complaints.completed %}
             <div class="kanban-card border-completed" data-complaint='{{ item | tojson | safe }}' onclick="showDetails(JSON.parse(this.getAttribute('data-complaint')))">
-              <b>ID</b>: {{ item.id }} <br/>
-              <b>Title</b>: {{ item.title }} <br/>
-              <b>Raised on Date</b>: {{ item.created_at }}
+              <b>ID</b>: {{ item.complaint_id }} <br/>
+              <b>Category</b>: {{ item.category }} <br/>
+              <b>Raised on Date</b>: {{ item.created_date }}
             </div>
           {% endfor %}
         </div>
@@ -305,12 +305,13 @@
   currentComplaint = obj;
   document.getElementById("complaintText").innerHTML =
     `<table class="complaint-details-table">
-      <tr><th>ID:</th><td>${obj.id}</td></tr>
-      <tr><th>Title:</th><td>${obj.title}</td></tr>
+      <tr><th>ID:</th><td>${obj.complaint_id}</td></tr>
+      <tr><th>client ID:</th><td>${obj.client_id}</td></tr>
       <tr><th>Description:</th><td>${obj.description}</td></tr>
-      <tr><th>Raised by:</th><td>${obj.raised_by}</td></tr>
-      <tr><th>Assigned to:</th><td>${obj.assigned_to_group}</td></tr>
-      <tr><th>Created at:</th><td>${obj.created_at}</td></tr>
+      <tr><th>Raised by:</th><td>${obj.client_name}</td></tr>
+      <tr><th>category:</th><td>${obj.category}</td></tr>
+      <tr><th>Created on:</th><td>${obj.created_date}</td></tr>
+      <tr><th>priority:</th><td>${obj.priority_level}</td></tr>
     </table>`;
   document.getElementById("analysisResult").innerHTML = "";
   new bootstrap.Modal(document.getElementById("complaintModal")).show();
@@ -357,11 +358,11 @@
       window.statusChartObj = new Chart(statusCtx, {
         type: 'bar',
         data: {
-          labels: ['Pending', 'In Progress', 'Completed'],
+          labels: ['New', 'In Progress', 'Completed'],
           datasets: [{
             label: 'Number of Complaints',
             data: [
-              statusCounts["Pending"] || 0,
+              statusCounts["New"] || 0,
               statusCounts["In Progress"] || 0,
               statusCounts["Completed"] || 0
             ],
