@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complaint Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-lg p-4">
+            <h2 class="mb-4 text-center">Complaint Registration Form</h2>
+            <form method="POST" enctype="multipart/form-data">
+                
+                <div class="mb-3">
+                    <label class="form-label">Client ID</label>
+                    <input type="text" name="clientid" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="name" value="John doe" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" value="johndoe@gmail.com" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" name="phone" value="123456789" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select" required>
+                        <option value="Billing">Billing</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Service">Service</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" rows="4" class="form-control" required>connection issue</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Attachment</label>
+                    <input type="file" name="attachment" class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Submit Complaint</button>
+            </form>
+
+            {% if submitted %}
+                <div class="alert alert-success mt-4">
+                    <h5>Complaint Submitted Successfully!</h5>
+                    <pre>{{ data | tojson(indent=2) }}</pre>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
