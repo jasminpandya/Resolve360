@@ -1,5 +1,6 @@
 from typing import Any
 from strands.types.tools import ToolResult, ToolUse
+from datetime import datetime, timezone
 import boto3
 import uuid
 import yaml
@@ -27,9 +28,14 @@ TOOL_SPEC = {
                 "description": {
                     "type": "string",
                     "description": "The description of the complaint being raised by the user in plain text"
-                }
+                },                
+                    "email": {
+                        "type": "string",
+                        "description": "The email address of the customer raising the complaint."
+                    }
+                
             },
-            "required": ["client_id", "description"]
+            "required": ["client_id", "description", "email"]
         }
     }
 }
@@ -53,8 +59,9 @@ def create_complaint(tool: ToolUse, **kwargs: Any) -> ToolResult:
     tool_use_id = tool["toolUseId"]
     client_id = tool["input"]["client_id"]
     description = tool["input"]["description"]
-    
-    results = f"Raising complaint for user {client_id} with description: {description}"
+    email = tool["input"]["email"]
+    today = datetime.utcnow().isoformat()
+    results = f"Raising complaint for user {client_id} with description: {description} and email id {email}"
 
     print(results)
     try:
@@ -64,6 +71,11 @@ def create_complaint(tool: ToolUse, **kwargs: Any) -> ToolResult:
                 'complaint_id': complaint_id,
                 'description': description,
                 'client_id': client_id,
+                'email':email,
+                'created_date': today,
+                'assignee_email': 'support@example.com',
+                'category': 'system',
+                'priority_level': '2.0',
                 'status': 'open'   # Assuming a status field to track the complaint status 
             }
         )
