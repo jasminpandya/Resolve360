@@ -15,7 +15,11 @@
 
     <div class="card bg-dark text-white p-4" style="min-width: 800px;">
       <h4 class="mb-3">Register a complaint</h4>
-      <form action="/submit" method="POST" enctype="multipart/form-data">
+      <form enctype="multipart/form-data" id="ComplaintRegistrationForm">
+        <div class="mb-3">
+            <label class="form-label">Client ID</label>
+            <input type="text" name="clientid" class="form-control" required>
+          </div>
       <div class="mb-3">
         <label>Name</label>
         <input type="text" name="name" class="form-control" required>
@@ -49,6 +53,28 @@
     </form>
     </div>
   </div>
+<script>
+  document.getElementById('ComplaintRegistrationForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Stop normal form submission
 
+    let formData = new FormData(this);
+
+    try {
+        let response = await fetch('/api/complaint', {
+            method: 'POST',
+            body: formData
+        });
+
+        let result = await response.text();
+        console.log(result);
+        alert(result); // Show in alert box
+        
+    } catch (error) {
+        alert("Error: " + error);
+    }
+});
+
+
+</script>
 </body>
 </html>
