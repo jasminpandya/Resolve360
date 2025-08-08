@@ -1,9 +1,9 @@
-<<<<<<< Updated upstream
+
 from flask import Flask, render_template, request, redirect, url_for, session
-=======
+
 from datetime import datetime, timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
->>>>>>> Stashed changes
+
 from werkzeug.security import check_password_hash, generate_password_hash
 import boto3
 import yaml  
@@ -104,9 +104,7 @@ def track():
         return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
     return render_template('track.html')
 
-<<<<<<< Updated upstream
 
-=======
 @app.route('/complaints')
 def get_complaints():
     return jsonify([
@@ -162,7 +160,33 @@ def create_complaint_api():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
     
-    
->>>>>>> Stashed changes
+@app.route('/api/complaints_fetch', methods=['GET'])
+def get_complaints_by_email():
+    email = request.args.get('email')
+    if not email:
+        return jsonify({"status": "error", "message": "Email is required"}), 400
+
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), 'prereqs/prereqs_config.yaml')
+        config = read_yaml_file(config_path)
+        kb_name = config['knowledge_base_name']
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        smm_client = boto3.client('ssm')
+        table_name = smm_client.get_parameter(Name=f'{kb_name}-table-name', WithDecryption=False)
+        table = dynamodb.Table(table_name)
+
+        # Query using GSI on 'email'
+        response = table.query(
+            IndexName='email-index',  # replace with the actual index name
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('email').eq(email)
+        )
+
+        complaints = response.get('Items', [])
+        return jsonify({"status": "success", "complaints": complaints}), 200
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
