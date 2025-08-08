@@ -6,7 +6,7 @@ import uuid
 import os
 import requests
 import boto3
-import yaml 
+import yaml
 
 app = Flask(__name__, template_folder='../webapp', static_folder='../static')
 

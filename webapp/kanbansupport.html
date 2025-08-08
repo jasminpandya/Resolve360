@@ -5,15 +5,16 @@
   <title>Resolve360 Support</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
     .kanban-column {
-      background: #f8f9fa;
+      background: #010e1b;
       border-radius: 8px;
       padding: 15px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
     .kanban-card {
-      background-color: #ffffff;
+      background-color: #496c8f;
       border: none;
       border-left: 5px solid;
       border-radius: 5px;
@@ -22,7 +23,7 @@
       cursor: pointer;
     }
     .kanban-card:hover {
-      background-color: #f1f1f1;
+      background-color: #02176b;
       transform: scale(1.01);
     }
     .border-new { border-color: #0d6efd; }
@@ -49,13 +50,6 @@
     .dropdown-header {
       font-weight: bold;
     }
-    .complaint-details {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 15px;
-  font-size: 1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-}
 .complaint-details-table {
   width: 100%;
 }
@@ -66,6 +60,7 @@
   font-weight: 500;
   padding-right: 10px;
 }
+
 .complaint-details-table td {
   color: #212529;
   padding-bottom: 8px;
@@ -84,56 +79,61 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.10);
 }
-.logo-img {
-  height: 150px; /* increased from 50px */
-  object-fit: contain;
-  width: 5000px;        /* Maintain aspect ratio */
-  max-width: 200px;   /* Optional: Limit how wide it can go */
+.modal-header .modal-title {
+  margin-left: 0.5rem;
 }
-.top-logo {
-  position: absolute;
-  top: 20px;
-  left: 20px;
+/* Dark-themed form controls */
+.modal-content.bg-dark .form-control,
+.modal-content.bg-dark .form-select,
+.modal-content.bg-dark textarea {
+  background-color: #1e1e1e; /* Dark grey */
+  color: white;
+  border: 1px solid #555;
+}
+
+.modal-content.bg-dark .form-control::placeholder,
+.modal-content.bg-dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.modal-content.bg-dark .form-control:focus,
+.modal-content.bg-dark .form-select:focus {
+  background-color: #1e1e1e;
+  border-color: #66afe9;
+  box-shadow: none;
+  color: white;
 }
   </style>
 </head>
-<body>
-  
-  <!-- Top Navbar -->
-  <nav class="navbar navbar-light bg-light px-4 d-flex justify-content-between align-items-center" >
-    <!-- Left: Logo -->
-    <div class="d-flex align-items-center">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" 
-             alt="Resolve360 Logo" 
-             class="logo-img me-3" 
-             style="height: 50%;width: 50%;object-fit: contain; " />
-    </div>
-
-    <!-- Right: Buttons + Profile -->
-    <div class="d-flex align-items-center">
-        <button class="btn btn-outline-info me-2" onclick="openAnalyticsModal()">Complaint Analytics</button>
-        <button class="btn btn-outline-info me-3" data-bs-toggle="modal" data-bs-target="#complaintRegistrationModal">
-            Register Complaint
-        </button>
-
-        <!-- Profile Dropdown -->
-        <div class="dropdown">
-            <img src="{{ url_for('static', filename='images/user-avatar.png') }}" 
-                 alt="Profile" 
-                 class="profile-avatar dropdown-toggle" 
-                 data-bs-toggle="dropdown" 
-                 style="height: 40px; width: 40px; border-radius: 50%; cursor: pointer;" />
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li class="dropdown-header">Profile</li>
-                <li><span class="dropdown-item-text">Email: {{ email }}</span></li>
-                <li><span class="dropdown-item-text">Role: {{ support }}</span></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="{{ url_for('logoutsupport') }}">Logout</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
+<body class="dark-theme">
+  <div class="top-logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Resolve360 Logo" class="logo-img">
+  </div>
+  <!-- KRUTARTH  -->
+   <div class="container d-flex flex-column align-items-center justify-content-center vh-100">
+    
+  <nav class="navbar navbar-light bg-light px-4 d-flex justify-content-between align-items-center position-absolute" 
+         style="top: 0px; right: 0;">
+      <!-- Right: Buttons + Profile -->
+    
+      <div class="d-flex align-items-center">
+          <!-- Profile Dropdown -->
+          <div class="dropdown">
+              <img src="{{ url_for('static', filename='images/user-avatar.png') }}" 
+                   alt="Profile" 
+                   class="profile-avatar dropdown-toggle" 
+                   data-bs-toggle="dropdown" 
+                   style="height: 40px; width: 40px; border-radius: 50%; cursor: pointer;" />
+              <ul class="dropdown-menu dropdown-menu-end">
+                  <li class="dropdown-header">Profile</li>
+                  <li><span class="dropdown-item-text">Email: {{ email }}</span></li>
+                  <li><span class="dropdown-item-text">Role: {{ support }}</span></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" href="{{ url_for('logoutsupport') }}">Logout</a></li>
+              </ul>
+          </div>
+      </div>
+    </nav>
 
   <!-- Kanban Section -->
   <div class="container py-4">
@@ -176,13 +176,19 @@
       </div>
     </div>
   </div>
-
+    <!-- Center: Buttons -->
+   <div class="d-flex justify-content-center gap-4">
+    <button class="btn btn-primary" onclick="openAnalyticsModal()">Complaint Analytics</button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#complaintRegistrationModal">
+        Register Complaint
+    </button>
+</div>
   <!-- Complaint Modal -->
   <div class="modal fade" id="complaintModal" tabindex="-1" aria-labelledby="complaintModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title flex-grow-1 mb-0" id="complaintModalLabel">Complaint Details</h5>
+          <h5 style="color:black" id="complaintModalLabel">Complaint Details</h5>
           
         </div>
         <div class="modal-body">
@@ -205,7 +211,7 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="analyticsModalLabel">Complaint Analytics</h5>
+        <h5 style="color:black" id="analyticsModalLabel">Complaint Analytics</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <!-- Make modal-body light -->
@@ -233,63 +239,53 @@
 <!-- Complaint Registration Modal -->
 <div class="modal fade" id="complaintRegistrationModal" tabindex="-1" aria-labelledby="complaintModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      
-      <!-- Modal Header -->
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="complaintModalLabel">Complaint Registration Form</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header border-0">
+        <h4 class="mb-0">Register a Complaint</h4>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-
-      <!-- Modal Body -->
-      <div class="modal-body">
+      <div class="modal-body p-4">
         <form enctype="multipart/form-data" id="ComplaintRegistrationForm">
           <div class="mb-3">
             <label class="form-label">Client ID</label>
             <input type="text" name="clientid" class="form-control" required>
           </div>
-
           <div class="mb-3">
             <label class="form-label">Name</label>
             <input type="text" name="name" class="form-control" required>
           </div>
-
           <div class="mb-3">
             <label class="form-label">Email</label>
             <input type="email" name="email" class="form-control" required>
           </div>
-
           <div class="mb-3">
             <label class="form-label">Phone</label>
             <input type="tel" name="phone" class="form-control" required>
           </div>
-
           <div class="mb-3">
             <label class="form-label">Category</label>
             <select name="category" class="form-select" required>
-              <option value="">-- Select Category --</option>
-              <option value="Billing">Billing</option>
-              <option value="Technical">Technical</option>
-              <option value="General">General</option>
+              <option value="">Select Category</option>
+              <option>Billing</option>
+              <option>Technical Issue</option>
+              <option>Account</option>
+              <option>Other</option>
             </select>
           </div>
-
           <div class="mb-3">
             <label class="form-label">Description</label>
-            <textarea name="description" class="form-control" rows="3" required></textarea>
+            <textarea name="description" class="form-control" rows="4" placeholder="Enter Complaint Details" required></textarea>
           </div>
-
           <div class="mb-3">
-            <label class="form-label">Attachment</label>
-            <input type="file" name="attachment" class="form-control">
+            <label class="form-label">Attachment (optional)</label>
+            <input type="file" name="file" class="form-control">
           </div>
-
-          <!-- Submit Button -->
-          <div class="text-end">
-            <button type="submit" class="btn btn-success">Submit Complaint</button>
-          </div>
+          <button type="submit" class="btn btn-primary">Submit Complaint</button>
         </form>
       </div>
+    </div>
+  </div>
+</div>
 
     </div>
   </div>
