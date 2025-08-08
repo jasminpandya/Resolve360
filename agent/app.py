@@ -200,13 +200,13 @@ def submit():
 
     return render_template('success.html', complaint_id=complaint_id)
 
-@app.route('/track', methods=['GET', 'POST'])
-def track():
-    if request.method == 'POST':
-        complaint_id = request.form['complaint_id']
-        complaint = get_complaints.get(complaint_id)
-        return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
-    return render_template('track.html')
+# @app.route('/track', methods=['GET', 'POST'])
+# def track():
+#     if request.method == 'POST':
+#         complaint_id = request.form['complaint_id']
+#         # complaint = get_complaints.get(complaint_id)
+#         return render_template('track.html', complaint=complaint, complaint_id=complaint_id)
+#     return render_template('track.html')
 
 @app.route('/callAgentForAnalysis', methods=['POST'])
 def callAgentForAnalysis():
@@ -271,20 +271,23 @@ def create_complaint_api():
         table_name = smm_client.get_parameter(Name=f'{kb_name}-table-name', WithDecryption=False)
         table = dynamodb.Table(table_name["Parameter"]["Value"])
         # get today's date
-        today = datetime.datetime.now().date()
+        today = datetime.utcnow().isoformat()
+        print(today)
         complaint_id = str(uuid.uuid4())[:8]
         table.put_item(
             Item={
                 'client_id': '1',
                 'complaint_id': complaint_id,
                 'name': name,
+                'client_name': name,
                 'email': email,
                 'phone': phone,
                 'category': category,
                 'description': description,
                 'status': 'open',
                 'assignee_email': 'support@gmail.com',
-                'created_date': today
+                'created_date': today,
+                'priority_level': '2.0'
             }
         )
         print("complaint added")
