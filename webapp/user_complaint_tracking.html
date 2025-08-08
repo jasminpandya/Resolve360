@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Resolve360 Support</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .kanban-column {
+      background: #010e1b;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .kanban-card {
+      background-color: #496c8f;
+      border: none;
+      border-left: 5px solid;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .kanban-card:hover {
+      background-color: #02176b;
+      transform: scale(1.01);
+    }
+    .border-new { border-color: #0d6efd; }
+    .border-progress { border-color: #ffc107; }
+    .border-completed { border-color: #198754; }
+
+    .navbar {
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .profile-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+
+    .dropdown-menu {
+      min-width: 250px;
+    }
+
+    .dropdown-header {
+      font-weight: bold;
+    }
+.complaint-details-table {
+  width: 100%;
+}
+.complaint-details-table th {
+  text-align: left;
+  width: 30%;
+  color: #495057;
+  font-weight: 500;
+  padding-right: 10px;
+}
+
+.complaint-details-table td {
+  color: #212529;
+  padding-bottom: 8px;
+}
+#editStatusBtn {
+  margin-right: 10px;
+}
+.modal-header .modal-title {
+  margin-left: 0.5rem;
+}
+/* Add to your <style> block */
+#analyticsModal .modal-body {
+  background: #f8f9fa;
+}
+#analyticsModal .card.bg-dark {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.modal-header .modal-title {
+  margin-left: 0.5rem;
+}
+/* Dark-themed form controls */
+.modal-content.bg-dark .form-control,
+.modal-content.bg-dark .form-select,
+.modal-content.bg-dark textarea {
+  background-color: #1e1e1e; /* Dark grey */
+  color: white;
+  border: 1px solid #555;
+}
+
+.modal-content.bg-dark .form-control::placeholder,
+.modal-content.bg-dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.modal-content.bg-dark .form-control:focus,
+.modal-content.bg-dark .form-select:focus {
+  background-color: #1e1e1e;
+  border-color: #66afe9;
+  box-shadow: none;
+  color: white;
+}
+  </style>
+</head>
+<body class="dark-theme">
+  <div class="top-logo">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Resolve360 Logo" class="logo-img">
+  </div>
+  <!-- KRUTARTH  -->
+   <div class="container d-flex flex-column align-items-center justify-content-center vh-100">
+    
+  <nav class="navbar navbar-light bg-light px-4 d-flex justify-content-between align-items-center position-absolute" 
+         style="top: 0px; right: 0;">
+      <!-- Right: Buttons + Profile -->
+    
+      <div class="d-flex align-items-center">
+          <!-- Profile Dropdown -->
+          <div class="dropdown">
+              <img src="{{ url_for('static', filename='images/user-avatar.png') }}" 
+                   alt="Profile" 
+                   class="profile-avatar dropdown-toggle" 
+                   data-bs-toggle="dropdown" 
+                   style="height: 40px; width: 40px; border-radius: 50%; cursor: pointer;" />
+              <ul class="dropdown-menu dropdown-menu-end">
+                  <li class="dropdown-header">Profile</li>
+                  <li><span class="dropdown-item-text">Email: {{ email }}</span></li>
+                  <li><span class="dropdown-item-text">Role:  customer </span></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" href="{{ url_for('logoutsupport') }}">Logout</a></li>
+              </ul>
+          </div>
+      </div>
+    </nav>
+
+  <!-- Kanban Section -->
+  <div class="container py-4">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="kanban-column">
+          <h5 class="text-primary">🆕 New</h5>
+          {% for item in complaints.new %}
+            <div class="kanban-card border-new" data-complaint='{{ item | tojson | safe }}' onclick="showDetails(JSON.parse(this.getAttribute('data-complaint')))">
+              <b>ID</b>: {{ item.complaint_id }} <br/>
+              <b>Category</b>: {{ item.category }} <br/>
+              <b>Raised on Date</b>: {{ item.created_date }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="kanban-column">
+          <h5 class="text-warning">⚙️ In Progress</h5>
+          {% for item in complaints.in_progress %}
+            <div class="kanban-card border-progress" data-complaint='{{ item | tojson | safe }}' onclick="showDetails(JSON.parse(this.getAttribute('data-complaint')))">
+              <b>ID</b>: {{ item.complaint_id }} <br/>
+              <b>Category</b>: {{ item.category }} <br/>
+              <b>Raised on Date</b>: {{ item.created_date }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="kanban-column">
+          <h5 class="text-success">✅ Completed</h5>
+          {% for item in complaints.completed %}
+            <div class="kanban-card border-completed" data-complaint='{{ item | tojson | safe }}' onclick="showDetails(JSON.parse(this.getAttribute('data-complaint')))">
+              <b>ID</b>: {{ item.complaint_id }} <br/>
+              <b>Category</b>: {{ item.category }} <br/>
+              <b>Raised on Date</b>: {{ item.created_date }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+    <!-- Center: Buttons -->
+   <div class="d-flex justify-content-center gap-4">
+    <button class="btn btn-primary" onclick="openAnalyticsModal()">Complaint Analytics</button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#complaintRegistrationModal">
+        Register Complaint
+    </button>
+</div>
+  <!-- Complaint Modal -->
+  <div class="modal fade" id="complaintModal" tabindex="-1" aria-labelledby="complaintModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 style="color:black" id="complaintModalLabel">Complaint Details</h5>
+          
+        </div>
+        <div class="modal-body">
+  <div id="complaintText" class="complaint-details"></div>
+  <hr />
+  <div id="analysisResult" class="small text-dark"></div>
+</div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-primary" onclick="analyze()">Analyze</button>
+          <button class="btn btn-outline-primary" onclick="editStatus()" id="editStatusBtn">
+    Edit Status
+  </button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- Analytics Modal -->
+<div class="modal fade" id="analyticsModal" tabindex="-1" aria-labelledby="analyticsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 style="color:black" id="analyticsModalLabel">Complaint Analytics</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <!-- Make modal-body light -->
+      <div class="modal-body bg-light">
+        <div class="row">
+          <div class="col-md-6">
+            <!-- Chart card stays dark -->
+            <div class="card bg-dark text-white p-4 mb-4 shadow">
+              <h5 class="text-center mb-3">Complaint Status</h5>
+              <canvas id="statusChart" height="300"></canvas>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card bg-dark text-white p-4 mb-4 shadow">
+              <h5 class="text-center mb-3">Complaint Trend Over Time</h5>
+              <canvas id="trendChart" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Complaint Registration Modal -->
+<div class="modal fade" id="complaintRegistrationModal" tabindex="-1" aria-labelledby="complaintModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header border-0">
+        <h4 class="mb-0">Register a Complaint</h4>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form enctype="multipart/form-data" id="ComplaintRegistrationForm">
+          <div class="mb-3">
+            <label class="form-label">Client ID</label>
+            <input type="text" name="clientid" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="tel" name="phone" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select" required>
+              <option value="">Select Category</option>
+              <option>Billing</option>
+              <option>Technical Issue</option>
+              <option>Account</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="4" placeholder="Enter Complaint Details" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Attachment (optional)</label>
+            <input type="file" name="file" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Complaint</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentComplaint = "";
+    function editStatus() {
+  alert("Edit status functionality coming soon!");
+  // You can implement a dropdown or modal for status update here.
+}
+    function showDetails(obj) {
+  currentComplaint = obj;
+  document.getElementById("complaintText").innerHTML =
+    `<table class="complaint-details-table">
+      <tr><th>ID:</th><td>${obj.complaint_id}</td></tr>
+      <tr><th>client ID:</th><td>${obj.client_id}</td></tr>
+      <tr><th>Description:</th><td>${obj.description}</td></tr>
+      <tr><th>Raised by:</th><td>${obj.client_name}</td></tr>
+      <tr><th>category:</th><td>${obj.category}</td></tr>
+      <tr><th>Created on:</th><td>${obj.created_date}</td></tr>
+      <tr><th>priority:</th><td>${obj.priority_level}</td></tr>
+    </table>`;
+  document.getElementById("analysisResult").innerHTML = "";
+  new bootstrap.Modal(document.getElementById("complaintModal")).show();
+}
+
+    function analyze() {
+      fetch('/callAgentForAnalysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: currentComplaint.description })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        const result = `
+          <strong>Analysis:</strong> ${data.message}<br>
+        `;
+        document.getElementById("analysisResult").innerHTML = result;
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById("analysisResult").innerText = "Error analyzing complaint.";
+      });
+    }
+
+    function openAnalyticsModal() {
+  // Show modal first
+  const modal = new bootstrap.Modal(document.getElementById("analyticsModal"));
+  modal.show();
+
+  // Fetch analytics data from backend
+  fetch('/analytics-data')
+    .then(res => res.json())
+    .then(data => {
+      const statusCounts = data.status_counts;
+      const trendData = data.trend_data;
+
+      // Destroy previous charts if they exist
+      if (window.statusChartObj) window.statusChartObj.destroy();
+      if (window.trendChartObj) window.trendChartObj.destroy();
+
+      // Status Bar Chart
+      const statusCtx = document.getElementById('statusChart').getContext('2d');
+      window.statusChartObj = new Chart(statusCtx, {
+        type: 'bar',
+        data: {
+          labels: ['New', 'In Progress', 'Completed'],
+          datasets: [{
+            label: 'Number of Complaints',
+            data: [
+              statusCounts["New"] || 0,
+              statusCounts["In Progress"] || 0,
+              statusCounts["Completed"] || 0
+            ],
+            backgroundColor: ['orange', 'blue', 'green']
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      // Trend Line Chart
+      const trendCtx = document.getElementById('trendChart').getContext('2d');
+      window.trendChartObj = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: Object.keys(trendData),
+          datasets: [{
+            label: 'Complaints Over Time',
+            data: Object.values(trendData),
+            borderColor: 'cyan',
+            fill: false,
+            tension: 0.3
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true },
+            x: { ticks: { color: 'white' } }
+          },
+          plugins: {
+            legend: { labels: { color: 'white' } }
+          }
+        }
+      });
+    })
+    .catch(() => {
+      document.getElementById("analyticsModalBody").innerHTML = "<div class='text-danger'>Failed to load analytics.</div>";
+    });
+}
+
+document.getElementById('ComplaintRegistrationForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Stop normal form submission
+
+    let formData = new FormData(this);
+
+    try {
+        let response = await fetch('/api/complaint', {
+            method: 'POST',
+            body: formData
+        });
+
+        let result = await response.text();
+        console.log(result);
+        alert(result); // Show in alert box
+        
+    } catch (error) {
+        alert("Error: " + error);
+    }
+});
+
+  </script>
+</body>
+</html>

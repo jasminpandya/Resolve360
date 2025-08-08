@@ -24,13 +24,15 @@ def home():
 
 @app.route('/dashboard')
 def dashboard():
+    email=request.args.get('email')
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('chatbot.html')
+    return render_template('chatbot.html', email=email)
 
 users = {
     "admin@gmail.com": generate_password_hash("admin123"),
-    "customer@gmail.com": generate_password_hash("customer123")
+    "customer@gmail.com": generate_password_hash("customer123"),
+    "tomhyane@gmail.com": generate_password_hash("tom@pass123")
 }
 
 support_users={
@@ -105,7 +107,7 @@ def login():
 
         if user_hash and check_password_hash(user_hash, password):
             session['user'] = email
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('dashboard', email=email))
         else:
             return render_template('login.html', error="Invalid email or password.")
     return render_template('login.html')
@@ -321,6 +323,37 @@ def get_complaints_by_email():
         print(f"Error fetching complaints: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route("/user_complaint_tracking")
+def user_complaint_tracking():
+    email = request.args.get('email')
+    print(email)
+    complaints_list = get_complaints_raised_by_email(email)
+    complaints = {
+        'new': [],
+        'in_progress': [],
+        'completed': []
+    }
+
+    for complaint in complaints_list:
+        status = complaint['status'].lower()
+        # check if created_date not in complaint
+        
+            
+        if 'created_date' in complaint:
+            trend_data[complaint['created_date']] = trend_data.get(complaint['created_date'], 0) + 1
+        if status == 'open':
+            complaints['new'].append(complaint)
+            status_counts['New'] += 1
+        elif status == 'in_progress':
+            complaints['in_progress'].append(complaint)
+            status_counts['In Progress'] += 1
+        elif status == 'completed':
+            complaints['completed'].append(complaint)
+            status_counts['Completed'] += 1
+    print("response: "+str(complaints_list))
+    return render_template("user_complaint_tracking.html", complaints=complaints,email=email)
+
+
 def get_complaints_assigned_to_email(email):
     # email = request.args.get('email')
     if not email:
@@ -339,6 +372,35 @@ def get_complaints_assigned_to_email(email):
         response = table.query(
             IndexName='assignee_email-index',  # replace with the actual index name
             KeyConditionExpression=boto3.dynamodb.conditions.Key('assignee_email').eq(email)
+        )
+
+        complaints = response.get('Items', [])
+        print(f"Fetched complaints for email {email}: {complaints}")
+        return complaints
+
+    except Exception as e:
+        print(f"Error fetching complaints: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})
+
+
+def get_complaints_raised_by_email(email):
+    # email = request.args.get('email')
+    if not email:
+        return jsonify({"status": "error", "message": "Email is required"}), 400
+
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), 'prereqs/prereqs_config.yaml')
+        config = read_yaml_file(config_path)
+        kb_name = config['knowledge_base_name']
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        smm_client = boto3.client('ssm')
+        table_name = smm_client.get_parameter(Name=f'{kb_name}-table-name', WithDecryption=False)['Parameter']['Value']
+        table = dynamodb.Table(table_name)
+
+        # Query using GSI on 'email'
+        response = table.query(
+            IndexName='email-index',  # replace with the actual index name
+            KeyConditionExpression=boto3.dynamodb.conditions.Key('email').eq(email)
         )
 
         complaints = response.get('Items', [])
