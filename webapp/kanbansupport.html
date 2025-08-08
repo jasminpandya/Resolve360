@@ -84,27 +84,56 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.10);
 }
+.logo-img {
+  height: 150px; /* increased from 50px */
+  object-fit: contain;
+  width: 5000px;        /* Maintain aspect ratio */
+  max-width: 200px;   /* Optional: Limit how wide it can go */
+}
+.top-logo {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
   </style>
 </head>
 <body>
+  
   <!-- Top Navbar -->
-  <nav class="navbar navbar-light px-4">
-    <a class="navbar-brand" href="#"><strong>Resolve360 Support</strong></a>
-    <button class="btn btn-outline-info ms-3" onclick="openAnalyticsModal()">Complaint Analytics</button>
-    <button class="btn btn-outline-info ms-3" data-bs-toggle="modal" data-bs-target="#complaintRegistrationModal">
+  <nav class="navbar navbar-light bg-light px-4 d-flex justify-content-between align-items-center" >
+    <!-- Left: Logo -->
+    <div class="d-flex align-items-center">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" 
+             alt="Resolve360 Logo" 
+             class="logo-img me-3" 
+             style="height: 50%;width: 50%;object-fit: contain; " />
+    </div>
+
+    <!-- Right: Buttons + Profile -->
+    <div class="d-flex align-items-center">
+        <button class="btn btn-outline-info me-2" onclick="openAnalyticsModal()">Complaint Analytics</button>
+        <button class="btn btn-outline-info me-3" data-bs-toggle="modal" data-bs-target="#complaintRegistrationModal">
             Register Complaint
         </button>
-    <div class="dropdown">
-      <img src="{{ url_for('static', filename='images/user-avatar.png') }}" alt="Profile" class="profile-avatar dropdown-toggle" data-bs-toggle="dropdown" />
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li class="dropdown-header">Profile</li>
-        <li><span class="dropdown-item-text">Email: {{ email }}</span></li>
-        <li><span class="dropdown-item-text">Role: {{ support }}</span></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="{{ url_for('logoutsupport') }}">Logout</a></li>
-      </ul>
+
+        <!-- Profile Dropdown -->
+        <div class="dropdown">
+            <img src="{{ url_for('static', filename='images/user-avatar.png') }}" 
+                 alt="Profile" 
+                 class="profile-avatar dropdown-toggle" 
+                 data-bs-toggle="dropdown" 
+                 style="height: 40px; width: 40px; border-radius: 50%; cursor: pointer;" />
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li class="dropdown-header">Profile</li>
+                <li><span class="dropdown-item-text">Email: {{ email }}</span></li>
+                <li><span class="dropdown-item-text">Role: {{ support }}</span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="{{ url_for('logoutsupport') }}">Logout</a></li>
+            </ul>
+        </div>
     </div>
-  </nav>
+</nav>
+
 
   <!-- Kanban Section -->
   <div class="container py-4">
@@ -214,7 +243,7 @@
 
       <!-- Modal Body -->
       <div class="modal-body">
-        <form method="POST" action="/api/complaint" enctype="multipart/form-data" id="ComplaintRegistrationForm">
+        <form enctype="multipart/form-data" id="ComplaintRegistrationForm">
           <div class="mb-3">
             <label class="form-label">Client ID</label>
             <input type="text" name="clientid" class="form-control" required>
@@ -378,29 +407,25 @@
     });
 }
 
-$(document).ready(function() {
-    $("#ComplaintRegistrationForm").on("submit", function(e) {
-        e.preventDefault();
+document.getElementById('ComplaintRegistrationForm').addEventListener('submit', async function(event) {
+    event.preventDefault(); // Stop normal form submission
 
-        var formData = new FormData(this);
+    let formData = new FormData(this);
 
-        $.ajax({
-            url: "/submit_complaint",
-            type: "POST",
-            data: formData,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                alert(response.message);
-                $("#complaintRegistrationModal").modal("hide");
-            },
-            error: function() {
-                alert("Error submitting complaint!");
-            }
+    try {
+        let response = await fetch('/api/complaint', {
+            method: 'POST',
+            body: formData
         });
-    });
+
+        let result = await response.text();
+        console.log(result);
+        alert(result); // Show in alert box
+        
+    } catch (error) {
+        alert("Error: " + error);
+    }
 });
-</script>
 
   </script>
 </body>

@@ -90,7 +90,7 @@ def generate_ai_response(message):
         return bot_reply
     except Exception as e:
         print("Error:", e)
-        return "⚠️ Failed to get response from chatbot."
+        return "⚠️ Failed to get response from chatbot.<a href='/manual-complaint'>Click here to register a manual complaint.</a>."
 
 @app.route('/manual-complaint')
 def manual_complaint():
@@ -269,7 +269,7 @@ def create_complaint_api():
     phone = data.get('phone')
     category = data.get('category')
     description = data.get('description')
-
+    print(data)
     file = request.files.get('attachment')
     print("inside complaint api")
     try:
